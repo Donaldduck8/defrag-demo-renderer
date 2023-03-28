@@ -1,0 +1,10 @@
+*settings.py
+*.dm_68
+*.mp4
+
+games.log
+q3history
+
+*/baseq3/*.pk3
+*/defrag/checksums/*.crc
+*/defrag/ghosts/*
