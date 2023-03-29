@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/playwright:v1.32.0-focal
+
+# https://jdhao.github.io/2021/01/17/install_python3_in_ubuntu_docker/
+RUN apt-get update && apt-get install -y software-properties-common gcc && \
+    add-apt-repository -y ppa:deadsnakes/ppa
+RUN apt-get update && apt-get install -y python3.9 python3-distutils python3-pip python3-apt
+
+RUN apt install ffmpeg
+RUN pip install discord.py emoji requests retrying
+
+COPY src/ usr/defrag-demo-renderer/src/
+COPY odfe/ usr/defrag-demo-renderer/odfe/
+
+WORKDIR /usr/defrag-demo-renderer/src
+RUN chmod +x ./script.py
+
+CMD ["python3", "script.py"]
