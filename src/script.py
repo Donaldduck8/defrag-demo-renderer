@@ -38,6 +38,13 @@ ODFE_VIDEO_CONFIG_P = os.path.join(ODFE_DEFRAG_DIR, ODFE_VIDEO_CONFIG_NAME)
 ODFE_DEMOS_DIR = os.path.join(ODFE_DEFRAG_DIR, "demos")
 ODFE_VIDEOS_DIR = os.path.join(ODFE_DEFRAG_DIR, "videos")
 
+def create_dir(dir_p):
+    if not os.path.isdir(dir_p):
+        os.makedirs(dir_p)
+    
+create_dir(ODFE_DEMOS_DIR)
+create_dir(ODFE_VIDEOS_DIR)
+
 DEMO_TEST_P = os.path.join(ODFE_DEMOS_DIR, "test.dm_68")
 VIDEO_TEST_P = os.path.join(ODFE_VIDEOS_DIR, "test.mp4")
 
