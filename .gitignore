@@ -1,6 +1,8 @@
 *settings.py
 *.dm_68
 *.mp4
+*.mp4-log.txt
+*.pyc
 
 games.log
 q3history
@@ -8,3 +10,6 @@ q3history
 */baseq3/*.pk3
 */defrag/checksums/*.crc
 */defrag/ghosts/*
+
+odfe/defrag/video.cfg
+odfe/pk3cache.dat
