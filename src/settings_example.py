@@ -16,7 +16,7 @@ ODFE_VIDEO_CONFIG = {
         "-b:v": "1000k",  # Placeholder, will be replaced by render_demo()
         "-maxrate": "1000k",
         "-bufsize": "1000k",
-        "-preset": "slow",
+        "-preset": "fast",
         "-vcodec": "libx264",
         "-flags": "+cgop",
         "-pix_fmt": "yuv420p",
