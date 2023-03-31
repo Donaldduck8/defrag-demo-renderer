@@ -34,7 +34,7 @@ STREAMABLE_HEADERS = {}
 
 STREAMABLE_COOKIES = {}
 
-CONTEXT_COOKIES = []
+CONTEXT_COOKIES = [{"name": k, "value": v, "url": "https://streamable.com"} for k,v in STREAMABLE_COOKIES.items()]
 
 
 def convert_config_dic_to_lines(config):
