@@ -317,7 +317,7 @@ def discord_bot_loop():
         print("Ready.")
 
     async def render_message_attachments_and_reply(message):
-        print("render_message_attachments_and_reply: " + str(message))
+        # print("render_message_attachments_and_reply: " + str(message))
 
         demo_paths = []
         demo_infos = []
