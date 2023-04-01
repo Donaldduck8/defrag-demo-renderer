@@ -24,7 +24,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-DEMOCLEANER_P = os.path.join(HERE, "DemoCleaner3.exe")
+DEMOCLEANER_P = os.path.join(HERE, "demo-cleaner", "DemoCleaner3.exe")
 # DEMOCLEANER_P = r'C:\Users\Donald\Documents\GitHub\DemoCleaner3\bin\Debug\DemoCleaner3.exe'
 
 ODFE_EXE_P = os.path.join(ODFE_DIR, "oDFe.x64.exe")
