@@ -38,8 +38,11 @@ streamable_session.cookies.update(STREAMABLE_COOKIES)
 def upload_video_streamable_playwright(video_p):
     with sync_playwright() as playwright:
         #args=["--shm-size=8gb"]
-        browser = playwright.firefox.launch(headless=True)
-        context = browser.new_context(user_agent=streamable_session.headers["User-Agent"], extra_http_headers={"Cookie": streamable_session.headers["Cookie"]})
+        browser_type_launch_args = {}
+        browser_type_launch_args['firefox_user_prefs'] = {"security.enterprise_roots.enabled": True, "security.ssl.enable_ocsp_stapling": False}
+        
+        browser = playwright.firefox.launch(headless=True, **browser_type_launch_args)
+        context = browser.new_context(user_agent=streamable_session.headers["User-Agent"], extra_http_headers={"Cookie": streamable_session.headers["Cookie"]}, ignore_https_errors=True)
 
         context.add_cookies(CONTEXT_COOKIES)
 
@@ -49,6 +52,10 @@ def upload_video_streamable_playwright(video_p):
         # Go to url
         page.goto("https://streamable.com/")
         page.on("filechooser", lambda file_chooser: file_chooser.set_files(video_p))
+        try:
+            page.get_by_role("button", name="Dismiss").click()
+        except:
+            print("IDK")
 
         print("Waiting for upload button")
         page.wait_for_selector('button:has-text("Upload video")')
@@ -58,11 +65,14 @@ def upload_video_streamable_playwright(video_p):
         # Get number of videos or list of shortcodes so far
         content = page.content()
         soup = BeautifulSoup(content, "html.parser")
+        
+        # print(soup)
 
         videos = soup.find_all("div", {"class": re.compile(r".+?video-item.*")})
         shortcodes = []
 
         for video in videos:
+            # print(video)
             e = video.find("a", {"id": "video-url-input"})
             href = e["href"]
             shortcode = href.split("/")[-1]
@@ -84,16 +94,19 @@ def upload_video_streamable_playwright(video_p):
             videos = soup.find_all("div", {"class": re.compile(r".+?video-item.*")})
 
             for video in videos:
-                e = video.find("a", {"id": "video-url-input"})
-                href = e["href"]
-                shortcode = href.split("/")[-1]
+                print(video)
+                try:
+                    e = video.find("a", {"id": "video-url-input"})
+                    href = e["href"]
+                    shortcode = href.split("/")[-1]
 
-                if shortcode not in shortcodes:
-                    shortcode_found = True
-
-
+                    if shortcode not in shortcodes:
+                        shortcode_found = True
+                except:
+                    pass
             
             if shortcode_found:
+                print(shortcode)
                 e = videos[0].find("a", {"id": "video-url-input"})
                 href = e["href"]
                 shortcode = href.split("/")[-1]
