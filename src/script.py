@@ -11,17 +11,19 @@ import traceback
 
 import urllib
 import discord
+import zipfile
+import emoji
 
 from settings import ODFE_DIR, ODFE_VIDEO_MAX_FILE_SIZE_BITS, ODFE_VIDEO_CONFIG, convert_config_dic_to_lines, ODFE_AUDIO_BITRATE, DISCORD_CHANNELS_ALLOWED, DISCORD_BOT_TOKEN
 from utils import retry_net
 
+# Need a flexible retry decorator for "moov atom not found" errors
 from retrying import retry
 
-import zipfile
-import emoji
-
+# Have to do this to avoid encoding errors down the line
 sys.stdout.reconfigure(encoding='utf-8')
 
+# Set up references to all important files and directories
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 DEMOCLEANER_P = os.path.join(HERE, "demo-cleaner", "DemoCleaner3.exe")
@@ -38,10 +40,12 @@ ODFE_VIDEO_CONFIG_P = os.path.join(ODFE_DEFRAG_DIR, ODFE_VIDEO_CONFIG_NAME)
 ODFE_DEMOS_DIR = os.path.join(ODFE_DEFRAG_DIR, "demos")
 ODFE_VIDEOS_DIR = os.path.join(ODFE_DEFRAG_DIR, "videos")
 
+# Safely use os.makedirs()
 def create_dir(dir_p):
     if not os.path.isdir(dir_p):
         os.makedirs(dir_p)
-    
+
+# Create /demos/ and /videos/ if they don't exist yet
 create_dir(ODFE_DEMOS_DIR)
 create_dir(ODFE_VIDEOS_DIR)
 
@@ -62,8 +66,7 @@ def get_demo_info(demo_p):
     result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
     if "Can not parse demo" in result.stdout:
-        # Fail here
-        pass
+        raise RuntimeError("Provided demo could not be parsed")
 
     return json.loads(result.stdout)
 
@@ -204,6 +207,7 @@ def render_demo(demo_p, demo_info, clean=False):
     demo_name = os.path.basename(demo_p)
     demo_name_stem = os.path.splitext(demo_name)[0]
 
+    # This [:56] trimming is done by q3e, I think
     if clean:
         video_name = f'{demo_name_stem}_clean.mp4'
         video_name_shortened = f'{demo_name_stem}_clean'[:56] + '.mp4'
@@ -211,7 +215,6 @@ def render_demo(demo_p, demo_info, clean=False):
         video_name = f'{demo_name_stem}.mp4'
         video_name_shortened = f'{demo_name_stem}'[:56] + '.mp4'
 
-    # TODO: FIX QUAKE3E RANDOMLY DECIDING TO CUT OFF THE VIDEO NAME LMAOOOO
     video_p = os.path.join(ODFE_VIDEOS_DIR, video_name_shortened)
 
     average_bitrate = calculate_video_bitrate(demo_info)
@@ -324,13 +327,19 @@ def discord_bot_loop():
 
         for _, attachment in enumerate(message.attachments):
             attachment_url = attachment.url
+            
+            print(attachment_url)
+            
+            attachment_url = attachment_url.split("?")[0]
 
             if attachment_url.endswith(".dm_68"):
                 demo_name = os.path.basename(urllib.parse.urlparse(urllib.parse.unquote(attachment_url)).path)  # what?????
                 demo_p = os.path.join(ODFE_DEMOS_DIR, demo_name)
+                
+                print(demo_p)
 
                 # Download demo
-                demo_b = retry_net(requests.get, url=attachment_url).content
+                demo_b = retry_net(requests.get, url=attachment.url).content
 
                 with open(demo_p, "wb+") as demo_f:
                     demo_f.write(demo_b)
@@ -456,6 +465,8 @@ def discord_bot_loop():
         await render_message_attachments_and_reply(message)
 
         # Now check the recent history of this channel to get more that might have slipped through the cracks of the event system
+        # LOL DONT DO THIS
+        
         historical_slice_size = 20
         historical_slice = 0
 
@@ -551,10 +562,12 @@ def render_teamrun_pip(demo_paths, demo_infos=None):
     average_bitrate = calculate_video_bitrate(demo_infos[0])
 
     if VIDEO_HOST == "STREAMABLE":
+        # Take into account the audio bitrate
+        # Also reduce bitrate by 60% to make sure we undershoot the maximum size
+        # Since ffmpeg thinks it's just a "suggestion"...
         video_bitrate = int(((average_bitrate - ODFE_AUDIO_BITRATE) / 1000) * 0.4)
-    elif VIDEO_HOST == "YOUTUBE":
-        video_bitrate = int(((average_bitrate - ODFE_AUDIO_BITRATE) / 1000) * 0.8)
 
+    # Limit bitrate
     video_bitrate = min(video_bitrate, 14000)
     video_bitrate_s = str(video_bitrate) + "k"
 
@@ -565,6 +578,8 @@ def render_teamrun_pip(demo_paths, demo_infos=None):
     while True:
         result = subprocess.run(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
+        # This error *randomly* happens, without any reason at all.
+        # Retrying forever WILL eventually get past this
         if "moov atom not found" in result.stdout or "moov atom not found" in result.stderr:
             print("TRYING AGAIN")
             # Just try again lmao
