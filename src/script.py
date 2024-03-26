@@ -265,7 +265,7 @@ def render_demo(demo_p, demo_info, clean=False):
 
 def upload_video_streamable_playwright_wrapper(video_p):
     args = [
-        "py",
+        "python",
         os.path.join(HERE, "upload_and_respond.py"),
         video_p
     ]
