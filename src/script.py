@@ -26,7 +26,8 @@ sys.stdout.reconfigure(encoding='utf-8')
 # Set up references to all important files and directories
 HERE = os.path.abspath(os.path.dirname(__file__))
 
-DEMOCLEANER_P = os.path.join(HERE, "DemoCleaner3.exe")
+DEMOCLEANER_P = os.path.join(HERE, "demo-cleaner", "DemoCleaner3.exe")
+# DEMOCLEANER_P = r'C:\Users\Donald\Documents\GitHub\DemoCleaner3\bin\Debug\DemoCleaner3.exe'
 
 ODFE_EXE_P = os.path.join(ODFE_DIR, "oDFe.x64.exe")
 
@@ -319,7 +320,7 @@ def discord_bot_loop():
         print("Ready.")
 
     async def render_message_attachments_and_reply(message):
-        print("render_message_attachments_and_reply: " + str(message))
+        # print("render_message_attachments_and_reply: " + str(message))
 
         demo_paths = []
         demo_infos = []

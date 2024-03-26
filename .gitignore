@@ -7,9 +7,12 @@
 games.log
 q3history
 
+streamable_cookies.json
+
 */baseq3/*.pk3
 */defrag/checksums/*.crc
 */defrag/ghosts/*
 
 odfe/defrag/video.cfg
 odfe/pk3cache.dat
+odfe/defrag/q3config.cfg
